@@ -32,3 +32,19 @@ jobs:
           name: Mirae-Attestatsiya-APK
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
+  verify:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: Mirae-Attestatsiya-APK
+          path: apk
+      - name: Verify APK signature with apksigner
+        run: |
+          set -e
+          APKSIGNER=$(ls -d "$ANDROID_HOME"/build-tools/*/apksigner | sort -V | tail -1)
+          echo "Using $APKSIGNER"
+          "$APKSIGNER" verify --verbose --print-certs apk/app-debug.apk
+          sha256sum apk/app-debug.apk
+          ls -l apk/app-debug.apk
